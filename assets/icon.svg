@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Source artwork for the app icon. Kept as a single square SVG (not a
+    hand-built binary .ico) so it's human-reviewable in a PR diff like any
+    other source file, and so the same shield/file motif used in the
+    Android app's launcher icon carries over here for brand consistency.
+    The CI workflow rasterizes this into icon.ico at multiple sizes
+    (16/32/48/256px) via ImageMagick, which ships preinstalled on GitHub's
+    windows-latest runners -- see .github/workflows/build-release.yml.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="48" fill="#0D1512" />
+
+  <path fill="#FFFFFF"
+        d="M128 44 L188 68 V124 C188 164 164 196 128 208 C92 196 68 164 68 124 V68 Z" />
+  <path fill="#2E7D6B"
+        d="M128 60 L172 78 V124 C172 156 152 180 128 190 C104 180 84 156 84 124 V78 Z" />
+
+  <path fill="#FFFFFF"
+        d="M108 112 H148 C151 112 153 114 153 117 V152 C153 155 151 157 148 157 H108 C105 157 103 155 103 152 V117 C103 114 105 112 108 112 Z" />
+  <path fill="#4FD1B5" d="M108 112 L122 96 H148 V112 Z" />
+</svg>

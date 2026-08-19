@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+      version="1.0.0.0"
+      processorArchitecture="*"
+      name="MNMYounus.YFP"
+      type="win32"
+  />
+
+  <!--
+    requestedExecutionLevel = "asInvoker" is a deliberate, load-bearing
+    choice, not the default left unconsidered: this app only ever writes
+    to locations the *current, unprivileged* user already has write access
+    to (their own drives' free space, folders they pick via the standard
+    file dialog). It has no legitimate reason to ask Windows for
+    administrator rights, and requesting elevation it doesn't need would
+    both throw an unnecessary UAC prompt at every launch and needlessly
+    widen what the process could do if anything in it were ever
+    compromised. A tool whose entire premise is "trustworthy, minimal,
+    does one thing" should not ask for more than that one thing requires.
+  -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+  <!-- Per-monitor DPI awareness (v2) so the UI renders crisp rather than
+       blurry-upscaled on high-DPI displays, and scales correctly if the
+       window is dragged between monitors with different scale factors. -->
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/PM</dpiAware>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+    </windowsSettings>
+  </application>
+
+  <!-- Declares compatibility with Windows 10/11 so the OS doesn't apply
+       legacy compatibility shims meant for much older applications. -->
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /> <!-- Windows 10/11 -->
+    </application>
+  </compatibility>
+
+  <!-- Modern (v6) common controls for native-looking dialogs, e.g. the
+       folder picker rfd invokes under the hood. -->
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+          type="win32"
+          name="Microsoft.Windows.Common-Controls"
+          version="6.0.0.0"
+          processorArchitecture="*"
+          publicKeyToken="6595b64144ccf1df"
+          language="*"
+      />
+    </dependentAssembly>
+  </dependency>
+
+</assembly>

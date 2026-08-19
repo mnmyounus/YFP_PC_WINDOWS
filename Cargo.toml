@@ -1,0 +1,101 @@
+[package]
+name = "yfp"
+version = "1.0.0"
+edition = "2021"
+authors = ["MNM Younus"]
+description = "YFP (Your Files Protector) - overwrites free disk space to prevent deleted file recovery"
+license = "MIT"
+# rust-version is pinned so `cargo build` behavior (and therefore binary
+# size / codegen) doesn't silently drift if a contributor has a newer
+# toolchain than intended. rust-toolchain.toml pins the same version for
+# local `rustup`-managed builds; the CI workflow
+# (.github/workflows/build-release.yml) pins it a third time, explicitly,
+# in its toolchain-setup step -- keep all three in sync if this ever
+# changes.
+rust-version = "1.78"
+
+[[bin]]
+name = "YFP"
+path = "src/main.rs"
+
+[dependencies]
+# egui/eframe: immediate-mode native GUI. Chosen specifically because it
+# has NO dependency on the system WebView2 runtime (unlike a wry/tauri-style
+# UI) and compiles to a self-contained binary with no external runtime
+# requirement -- appropriate for a security tool whose whole pitch is
+# "just works, offline, nothing else installed." Slightly less polished
+# visually than a web-tech UI, but that trade directly serves the "low MB,
+# zero dependencies" requirement.
+eframe = { version = "0.36", default-features = false, features = ["glow", "default_fonts", "persistence"] }
+egui = "0.36"
+
+# rfd: native Windows folder/file picker dialogs (thin wrapper over the
+# real Win32 IFileDialog COM APIs -- not a bundled UI toolkit, so it adds
+# negligible size). default-features=false with no extra features enabled
+# means rfd uses its native Win32 backend on this target; the xdg-portal
+# feature it also offers is Linux-only and irrelevant here.
+rfd = { version = "0.17", default-features = false }
+
+# windows: official Microsoft bindings, used narrowly for GetDiskFreeSpaceExW
+# (live free-space queries) and the tray-icon Shell_NotifyIcon APIs -- not a
+# UI framework, just the specific Win32 calls the engine needs that aren't
+# exposed through any higher-level crate.
+windows = { version = "0.62", features = [
+    "Win32_Storage_FileSystem",
+    "Win32_Foundation",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader",
+] }
+
+# tray-icon: minimal system tray integration so a long-running wipe can be
+# minimized to the tray (the desktop analog of Android's foreground service
+# + persistent notification -- the job keeps running and stays controllable
+# even when the main window isn't visible).
+tray-icon = "0.24"
+
+# open: launches a URL or mailto: link via the OS's own default-handler
+# mechanism (ShellExecute under the hood on Windows) -- the same role
+# Android's Intent.ACTION_VIEW / ACTION_SENDTO play. This process never
+# itself performs any network I/O; it only asks the OS to hand off to
+# whatever browser/mail app the user already has configured, exactly like
+# the Android app's "Check for Updates" / "Contact Developer" buttons.
+open = "5"
+
+# Fast, small, dependency-light. No serde/tokio/reqwest anywhere in this
+# project -- there is deliberately no async runtime and no JSON, since the
+# app has no network I/O (matching the "100% offline" requirement) and its
+# only persisted state is a couple of primitive preference values.
+rand = { version = "0.8", default-features = false, features = ["std", "small_rng"] }
+
+[profile.release]
+# Every flag below is specifically chosen to minimize final .exe size
+# without touching correctness -- this is what gets the release workflow's
+# artifact into single-digit MB rather than the 15-25MB an unoptimized
+# Rust release build with this dependency set would otherwise produce.
+opt-level = "z"        # optimize for size, not speed -- a file-write loop
+                        # is I/O-bound, not CPU-bound, so trading a small
+                        # amount of raw throughput for size is a good trade
+                        # here specifically, unlike in a compute-heavy app.
+lto = true              # link-time optimization: lets the linker strip
+                        # unreachable code across crate boundaries, which
+                        # matters a lot with several external dependencies.
+codegen-units = 1        # slower to compile, smaller/better-optimized output
+                          # -- fine to pay compile-time cost since this only
+                          # runs in CI, never in a developer's inner loop.
+strip = true               # remove debug symbols from the final binary.
+panic = "abort"              # removes unwinding-support tables; appropriate
+                              # here since a panic during a disk-write loop
+                              # should terminate the process rather than try
+                              # to unwind through file handles anyway.
+incremental = false
+
+[profile.release.package."*"]
+opt-level = "z"
+
+[build-dependencies]
+# Used only by build.rs to embed the .ico/.manifest into the PE file at
+# link time -- this never ships as part of the runtime binary itself, so
+# it has zero effect on final .exe size.
+winresource = "0.1"
