@@ -1,0 +1,26 @@
+# Cargo
+/target/
+Cargo.lock.bak
+
+# Generated icon assets -- produced from assets/icon.svg by
+# scripts/generate-icon.ps1 locally, or by the CI workflow's "Generate
+# icon.ico" step for release builds. Not committed as binaries, same
+# reasoning as the Android project's launcher-icon handling: keep the
+# human-reviewable SVG source in the repo, generate the binary derivatives
+# at build time.
+assets/icon.ico
+assets/icon_256.rgba
+assets/icon_32.rgba
+
+# Editor/IDE
+.vscode/
+.idea/
+*.iml
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Local build outputs, if ever produced outside target/
+*.exe
+*.pdb
